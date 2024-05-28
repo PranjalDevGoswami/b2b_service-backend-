@@ -9,6 +9,7 @@ import datetime
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.hashers import check_password,make_password
 User = get_user_model()
+from api.account.models import *
 
 #################### Registration API #############################################
 
@@ -73,28 +74,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         )        
         
 ########################### Reset Password ###########################################
-        
-# class PasswordResetSerializer(serializers.Serializer):
-#     uid = serializers.CharField()
-#     token = serializers.CharField()
-#     new_password = serializers.CharField(write_only=True)
-
-#     def validate(self, attrs):
-#         try:
-#             uid = urlsafe_base64_decode(attrs['uid']).decode()
-#             self.user = User.objects.get(pk=uid)
-#         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-#             raise serializers.ValidationError("Invalid token or user ID.")
-        
-#         if not default_token_generator.check_token(self.user, attrs['token']):
-#             raise serializers.ValidationError("Invalid token or user ID.")
-        
-#         return attrs
-
-#     def save(self):
-#         self.user.set_password(self.validated_data['new_password'])
-#         self.user.save()        
-
 
 class PasswordResetSerializer(serializers.Serializer):
     uid = serializers.CharField()
@@ -158,3 +137,42 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])
         user.save()
+
+
+################## Profile Update Serializer ################################################
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = [
+            'job', 'designation', 'countries', 'company', 
+            'profile_picture', 'birth_date'
+        ]
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = UserModel
+        fields = [
+            'email', 'first_name', 'middle_name', 'last_name', 
+            'gender', 'date_of_birth', 'mobile', 'industry', 
+            'category', 'linked_profile', 'contact_person_name', 
+            'contact_person_number', 'profile'
+        ]
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile')
+        profile = instance.profile
+
+        # Update UserModel instance
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Update Profile instance
+        for attr, value in profile_data.items():
+            setattr(profile, attr, value)
+        profile.save()
+
+        return instance

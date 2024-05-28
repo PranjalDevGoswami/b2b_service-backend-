@@ -12,6 +12,7 @@ from .serializers import *
 from rest_framework import status
 from rest_framework import generics
 from api.account.permissions import IsActive
+from django.contrib.auth import logout
 # Create your views here.
 
 User = get_user_model()
@@ -118,7 +119,27 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 
 
-from django.contrib.auth import logout
+
+
+####################### Profile Update API VIEW ####################################
+class UserProfileUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def put(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+
+
+
+##########################  Logout API VIEW #########################################
 
 class Logout(APIView):
     def post(self, request):
