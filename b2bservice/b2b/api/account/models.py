@@ -212,7 +212,12 @@ class Company(Trackable):
 class Industry(Trackable):
     name = models.CharField(max_length=255,verbose_name="Industry Name")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, related_name="industries")
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Industry Hierarchy"
+        verbose_name_plural = "Industry Hierarchies"
 
     def __str__(self):
         return self.name
@@ -284,9 +289,10 @@ class UserModel(AbstractUser, PermissionsMixin):
     class Meta:
         default_permissions = ()
         permissions = (
-            ('Sales dashboard', 'Sales dashboard'),
-            ('Operation dashboard', 'Operation dashboard'),
-            ('Finance dashboard', 'Finance dashboard'),
+            ('can_edit', 'Can Edit'),
+            ('can_view', 'Can View'),
+            ('can_create', 'Can Create'),
+            ('can_delete', 'Can Delete'),
         )
 
     @property
@@ -336,7 +342,7 @@ class Profile(models.Model):
         validators=[FileExtensionValidator(
             allowed_extensions=['jpg', 'jpeg', 'png'])]
     )
-    birth_date = models.DateField(null=True, blank=True)
+    # birth_date = models.DateField(null=True, blank=True)
     
     
     def __str__(self):
@@ -375,8 +381,28 @@ class UserActiveDetail(models.Model):
         except Exception as e:
             UserActiveDetail.objects.create(user=user,last_active_time=datetime.datetime.now())
 
-
-
     def __str__(self):
         return self.user.username
     
+
+
+class Role(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Department(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class UserRole(models.Model):
+    user = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Industry")
+
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role.name} - {self.user.industry.name}"

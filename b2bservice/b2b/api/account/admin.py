@@ -15,7 +15,7 @@ class UserAdmin(UserAdmin):
     list_filter = ('email', 'is_staff', 'is_active',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('first_name','middle_name','groups','last_name','mobile','industry','linked_profile','gender')}),
+        ('Personal info', {'fields': ('username','groups','last_name','mobile','industry','linked_profile','gender')}),
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
     )
     add_fieldsets = (
@@ -62,7 +62,7 @@ class CompanyAdmin(admin.ModelAdmin):
     
 @admin.register(Industry)
 class IndustryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name','company', 'created_by', 'created_at', 'updated_at')    
+    list_display = ('id','parent', 'name','company', 'created_by', 'created_at', 'updated_at')    
     
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
@@ -76,3 +76,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
 admin.site.register(Profile)
 admin.site.register(UserActiveDetail)
+
+
+admin.site.register(Role)
+admin.site.register(Department)
+admin.site.register(UserRole)

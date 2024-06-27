@@ -146,7 +146,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = [
             'job', 'designation', 'countries', 'company', 
-            'profile_picture', 'birth_date'
+            'profile_picture'
         ]
 
 class UserSerializer(serializers.ModelSerializer):
@@ -155,7 +155,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = [
-            'email', 'first_name', 'middle_name', 'last_name', 
+            'email',
             'gender', 'date_of_birth', 'mobile', 'industry', 
             'category', 'linked_profile', 'contact_person_name', 
             'contact_person_number', 'profile'

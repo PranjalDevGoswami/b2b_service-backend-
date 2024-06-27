@@ -38,11 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'django_userforeignkey',
     'corsheaders',
     'api',
-    'api.account'
+    'api.account',
+    'api.serveyapp',
 ]
 
 MIDDLEWARE = [
@@ -149,12 +151,20 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.BasicAuthentication',
+#         'rest_framework.authentication.SessionAuthentication',
+#     ]
+# }
+
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ]
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
+
 ################## CORS Header #######################
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -167,19 +177,37 @@ SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 
 ############### Send OTP with EMAIL #########################
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.office365.com'  # 'smtp-mail.outlook.com'
-# EMAIL_USE_TLS = True
-# EMAIL_PORT = 25       # 587
-# EMAIL_HOST_USER = 'noreply.erp@unimrkt.com'
-# EMAIL_HOST_PASSWORD = 'Q&005753819961ad'
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.office365.com'  # 'smtp-mail.outlook.com'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'tomarpramod0532@gmail.com'
+EMAIL_PORT = 25       # 587
+EMAIL_HOST_USER = 'noreply.erp@unimrkt.com'
+EMAIL_HOST_PASSWORD = 'Q&005753819961ad'
+
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+##EMAIL_USE_TLS = True
+#EMAIL_HOST = 'smtp.gmail.com'
+##EMAIL_PORT = 587
+#EMAIL_HOST_USER = 'tomarpramod0532@gmail.com'
 # EMAIL_HOST_PASSWORD = 'Shivansh!@#123456'
-EMAIL_HOST_PASSWORD = "rdwp kjes tsbk txje"
+#EMAIL_HOST_PASSWORD = "rdwp kjes tsbk txje"
 
 #DEmo = "nmeo yoji ddyr vtix"
+
+##################################### JWT TOKEN ################################################################
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}

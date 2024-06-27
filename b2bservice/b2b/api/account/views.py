@@ -13,9 +13,55 @@ from rest_framework import status
 from rest_framework import generics
 from api.account.permissions import IsActive
 from django.contrib.auth import logout
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import permissions, status as drf_status
+import base64
+from django.utils.encoding import force_bytes
+
 # Create your views here.
 
 User = get_user_model()
+
+
+###################### Custom Obtain Token #############################
+
+# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     def get_token(self, user):
+#         token = super().get_token(user)
+
+#         # Add custom claims
+#         token['user_id'] = base64.b64encode(force_bytes(str(user.id))).decode('utf-8')
+#         token['email'] = base64.b64encode(force_bytes(user.email)).decode('utf-8')
+#         try:
+#             profile_image_url = user.profile.profile_picture.url
+#         except Profile.DoesNotExist:
+#             profile_image_url = None
+#         token['profile_image'] = base64.b64encode(force_bytes(profile_image_url)).decode('utf-8')
+
+#         return token
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def get_token(self, user):
+        token = super().get_token(user)
+
+        # Add custom claims without base64 encoding
+        token['user_id'] = user.id
+        token['email'] = user.email
+        token['industry'] = user.industry.name
+        try:
+            profile_image_url = user.profile.profile_picture.url
+        except Profile.DoesNotExist:
+            profile_image_url = None
+        token['profile_image'] = profile_image_url
+
+        return token
+
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 ################### B2B User Registration API Views ####################
 
@@ -34,34 +80,44 @@ class B2bUserRegistration(generics.CreateAPIView):
 
 
 ################### B2B User Login API Views ############################
-
 class B2BUserLogin(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
-    
+
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        status = 0
+        response_status = 0
         errors = []
         data = {}
+
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             user = authenticate(email=email, password=password)
-            print("################", user)
+
             if user:
-                data = LoginSerializer(user).data
-                print("data", data)
-                status = 1
+                refresh = RefreshToken.for_user(user)
+                access = CustomTokenObtainPairSerializer().get_token(user).access_token
+
+                data = {
+                    'refresh': str(refresh),
+                    'access': str(access)
+                }
+
+                response_status = 1
+                return Response({"status": response_status, 'data': data, "errors": errors}, status=drf_status.HTTP_200_OK)
             else:
-                errors.append("username or password is not correct")
+                errors.append("Username or password is not correct")
+                return Response({"status": response_status, 'data': data, "errors": errors}, status=drf_status.HTTP_401_UNAUTHORIZED)
         else:
             validation_errors = []
             for k in serializer.errors:
-                validation_errors.append("{}: {}".format(k,serializer.errors.get(k)[0]))
+                validation_errors.append("{}: {}".format(k, serializer.errors.get(k)[0]))
             errors = validation_errors
+            return Response({"status": response_status, 'data': data, "errors": errors}, status=drf_status.HTTP_400_BAD_REQUEST)
 
-        return Response({"status": status, 'data':data, "errors": errors})
+
+
     
 
 ##################### Password Reset Request API Views ######################################
@@ -92,6 +148,7 @@ class PasswordResetView(generics.GenericAPIView):
             'uid': uid,
             'token': token,
             'new_password': request.data['new_password']
+
         })
         serializer.is_valid(raise_exception=True)
         serializer.save()
