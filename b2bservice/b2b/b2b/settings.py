@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     'api',
     'api.account',
     'api.serveyapp',
+    'api.feeds', 
+    'django_crontab',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -210,4 +213,31 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+}
+
+
+CRONJOBS = [
+    ('0 0 * * *', 'django.core.management.call_command', ['update_feeds']),
+]
+
+
+# myproject/settings.py
+
+from celery.schedules import crontab
+
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Redis as the broker
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Redis as the result backend
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_BEAT_SCHEDULE = {
+    'update-feeds-every-day': {
+        'task': 'api.feeds.tasks.update_feeds',
+        #'schedule': crontab(minute=0, hour=0),
+        'schedule': crontab(minute='*/1')
+    },
 }

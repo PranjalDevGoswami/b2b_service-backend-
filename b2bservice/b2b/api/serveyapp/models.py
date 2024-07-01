@@ -30,7 +30,7 @@ class servey_question_detail(models.Model):
     title = models.CharField(max_length=255, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
     language = models.ForeignKey(Language, on_delete=models.CASCADE, null=True, blank=True)
-    descriptions = models.TextField(null=True, blank=True)
+    # descriptions = models.TextField(null=True, blank=True)
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)

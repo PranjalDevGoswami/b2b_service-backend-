@@ -60,3 +60,4 @@ class CommunityCommentViewSet(viewsets.ModelViewSet):
 class CommunityLikeViewSet(viewsets.ModelViewSet):
     queryset = CommunityLike.objects.all()
     serializer_class = CommunityLikeSerializer
+

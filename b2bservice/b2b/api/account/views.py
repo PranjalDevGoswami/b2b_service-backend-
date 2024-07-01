@@ -18,7 +18,12 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions, status as drf_status
 import base64
+from rest_framework import viewsets
+
 from django.utils.encoding import force_bytes
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
 
 # Create your views here.
 
@@ -203,3 +208,21 @@ class Logout(APIView):
         # Perform logout operation
         logout(request)
         return Response({"message": "Logged out successfully"})
+    
+    
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for viewing and editing user instances.
+    """
+    serializer_class = UserSerializer
+    queryset = User.objects.all()   
+    
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def current_user(self, request):
+        if request.user.is_authenticated:
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        else:
+            return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
