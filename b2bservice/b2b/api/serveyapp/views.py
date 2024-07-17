@@ -1,34 +1,43 @@
 from django.shortcuts import render
+from api.account.permissions import IsSuperUser, HasRolePermission
 
 # Create your views here.
 from rest_framework import viewsets
-from .models import (
-    Language, Survey, servey_question_detail, SurveyAnswer, Interview, 
-    MissedInterview, Reward, Community, CommunityMember, CommunityPost, 
-    CommunityComment, CommunityLike
-)
-from .serializers import (
-    LanguageSerializer, SurveySerializer, SurveyQuestionDetailSerializer, SurveyAnswerSerializer, 
-    InterviewSerializer, MissedInterviewSerializer, RewardSerializer, CommunitySerializer, 
-    CommunityMemberSerializer, CommunityPostSerializer, CommunityCommentSerializer, CommunityLikeSerializer
-)
-
+from .models import *
+from .serializers import *
+from rest_framework.permissions import IsAuthenticated
 class LanguageViewSet(viewsets.ModelViewSet):
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
 
-class SurveyViewSet(viewsets.ModelViewSet):
-    queryset = Survey.objects.all()
-    serializer_class = SurveySerializer
-
-class SurveyQuestionDetailViewSet(viewsets.ModelViewSet):
-    queryset = servey_question_detail.objects.all()
-    serializer_class = SurveyQuestionDetailSerializer
+class SurveyQuestionViewSet(viewsets.ModelViewSet):
+    queryset = SurveyQuestion.objects.all()
+    serializer_class = SurveyQuestionSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return SurveyQuestion.objects.all()
+        else:
+            return SurveyQuestion.objects.filter(created_by=self.request.user)
 
 class SurveyAnswerViewSet(viewsets.ModelViewSet):
     queryset = SurveyAnswer.objects.all()
     serializer_class = SurveyAnswerSerializer
-
+    permission_classes = [IsAuthenticated]  # 
+    
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return SurveyQuestion.objects.all()
+        else:
+            return SurveyQuestion.objects.filter(created_by=self.request.user)
+        
+        user_role = UserRole.objects.filter(user=self.request.user).first()
+        
+        if user_role and user_role.permissions.filter(codename='view_interview').exists():
+            return Interview.objects.filter(created_by=self.request.user)
+        
+        
 class InterviewViewSet(viewsets.ModelViewSet):
     queryset = Interview.objects.all()
     serializer_class = InterviewSerializer

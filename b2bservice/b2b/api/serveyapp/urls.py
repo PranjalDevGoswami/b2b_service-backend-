@@ -4,17 +4,13 @@ from rest_framework.routers import DefaultRouter
 
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import (
-    LanguageViewSet, SurveyViewSet, SurveyQuestionDetailViewSet, SurveyAnswerViewSet, 
-    InterviewViewSet, MissedInterviewViewSet, RewardViewSet, CommunityViewSet, 
-    CommunityMemberViewSet, CommunityPostViewSet, CommunityCommentViewSet, CommunityLikeViewSet
-)
+from .views import *
+from . import views
 
 router = DefaultRouter()
 router.register(r'languages', LanguageViewSet)
-router.register(r'surveys', SurveyViewSet)
-router.register(r'survey-question-details', SurveyQuestionDetailViewSet)
-router.register(r'survey-answers', SurveyAnswerViewSet)
+router.register(r'survey-questions', views.SurveyQuestionViewSet)
+router.register(r'survey-answers', views.SurveyAnswerViewSet)
 router.register(r'interviews', InterviewViewSet)
 router.register(r'missed-interviews', MissedInterviewViewSet)
 router.register(r'rewards', RewardViewSet)

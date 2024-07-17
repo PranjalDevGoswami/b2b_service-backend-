@@ -1,10 +1,8 @@
 from rest_framework import serializers
-from .models import (
-    Language, Survey, servey_question_detail, SurveyAnswer, Interview, 
-    MissedInterview, Reward, Community, CommunityMember, CommunityPost, 
-    CommunityComment, CommunityLike
-)
+from .models import *
 from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
+
 
 User = get_user_model()
 
@@ -13,27 +11,16 @@ class LanguageSerializer(serializers.ModelSerializer):
         model = Language
         fields = ['id', 'name']
 
-class SurveySerializer(serializers.ModelSerializer):
-    created_by = serializers.StringRelatedField(read_only=True)
-
+class SurveyQuestionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Survey
-        fields = ['id', 'question', 'points', 'created_by', 'industry', 'created_at']
-
-class SurveyQuestionDetailSerializer(serializers.ModelSerializer):
-    survey = SurveySerializer(read_only=True)
-
-    class Meta:
-        model = servey_question_detail
-        fields = ['id', 'survey', 'title', 'company', 'language', 'descriptions', 'start_date', 'end_date', 'is_active', 'time_zone', 'no_of_questions', 'created_at']
-
+        model = SurveyQuestion
+        fields = '__all__'
+        
+        
 class SurveyAnswerSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
-    survey = SurveySerializer(read_only=True)
-
     class Meta:
         model = SurveyAnswer
-        fields = ['id', 'user', 'survey', 'answer', 'is_public', 'created_at']
+        fields = '__all__'        
 
 class InterviewSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)

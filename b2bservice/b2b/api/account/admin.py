@@ -16,7 +16,7 @@ class UserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username','groups','last_name','mobile','industry','linked_profile','gender')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser')}),
     )
     add_fieldsets = (
         (None, {
@@ -78,6 +78,53 @@ admin.site.register(Profile)
 admin.site.register(UserActiveDetail)
 
 
+# admin.site.register(Role)
+# admin.site.register(Department)
+# admin.site.register(UserRole)
+
+
+from django.contrib import admin
+from django.contrib.auth.models import Permission
+from .models import UserRole, UserModel, Role, Department
+
+class UserRoleAdmin(admin.ModelAdmin):
+    list_display = ('user', 'role', 'department')
+    list_filter = ('role', 'department')
+    search_fields = ('user__username', 'role__name', 'department__name')
+    filter_horizontal = ('permissions',)
+
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'role', 'department')
+        }),
+        ('Permissions', {
+            'fields': ('permissions',),
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Add permissions to the user when UserRole is saved
+        user = obj.user
+        for perm in obj.permissions.all():
+            user.user_permissions.add(perm)
+        user.save()
+
+    def delete_model(self, request, obj):
+        user = obj.user
+        # Remove permissions from the user when UserRole is deleted
+        for perm in obj.permissions.all():
+            user.user_permissions.remove(perm)
+        user.save()
+        super().delete_model(request, obj)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        # Ensure that we have the permissions available in the queryset
+        return queryset.prefetch_related('permissions')
+
+admin.site.register(UserRole, UserRoleAdmin)
 admin.site.register(Role)
 admin.site.register(Department)
-admin.site.register(UserRole)
+admin.site.register(Permission)
+

@@ -31,6 +31,7 @@ AUTH_USER_MODEL = 'account.UserModel'
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,7 +48,8 @@ INSTALLED_APPS = [
     'api.serveyapp',
     'api.feeds', 
     'django_crontab',
-    'django_celery_beat'
+    'django_celery_beat',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -238,6 +240,81 @@ CELERY_BEAT_SCHEDULE = {
     'update-feeds-every-day': {
         'task': 'api.feeds.tasks.update_feeds',
         #'schedule': crontab(minute=0, hour=0),
-        'schedule': crontab(minute='*/1')
+        'schedule': crontab()
     },
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
+
+
+
+
+#######################################  Customize Admin Panel ############################################
+JAZZMIN_SETTINGS = {
+    # title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": "B2B Admin Panel",
+
+    # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_header": "B2B Admin Panel",
+
+    # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_brand": "B2B Admin Panel",
+
+    # Logo to use for your site, must be present in static files, used for brand on top left
+    # "site_logo": "books/img/logo.png",
+
+    # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
+    "login_logo": None,
+
+    # Logo to use for login form in dark themes (defaults to login_logo)
+    "login_logo_dark": None,
+
+    # CSS classes that are applied to the logo above
+    "site_logo_classes": "img-circle",
+
+    # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
+    "site_icon": None,
+
+    # Welcome text on the login screen
+    "welcome_sign": "Welcome to the B2B Admin Panel",
+
+    # Copyright on the footer
+    "copyright": "B2B Novus Insights Ltd",
+
+    # List of model admins to search from the search bar, search bar omitted if excluded
+    # If you want to use a single search field you dont need to use a list, you can use a simple string 
+    "search_model": ["auth.User", "auth.Group"],
+
+    # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
+    "user_avatar": None,
+
+    ############
+    # Top Menu #
+    ############
+
+    # Links to put along the top menu
+    "topmenu_links": [
+
+        # Url that gets reversed (Permissions can be added)
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+
+        # external url that opens in a new window (Permissions can be added)
+
+        # model admin to link to (Permissions checked against model)
+        {"model": "auth.User"},
+
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "account"},
+    ],
+
+    #############
+    # User Menu #
+    #############
+
+
+ 
+}
+JAZZMIN_SETTINGS["show_ui_builder"] = True
+LOGIN_URL = '/admin/login/'

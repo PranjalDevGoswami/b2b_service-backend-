@@ -1,75 +1,23 @@
 from rest_framework import permissions
+from rest_framework.permissions import BasePermission
+from api.account.models import *
 
-####################### Request User IsActive ################################
+####################### Request User IsSuperuser ################################
 
-class IsActive(permissions.BasePermission):
+from rest_framework.permissions import BasePermission
+
+class IsSuperUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser
+
+class HasRolePermission(BasePermission):
+    def __init__(self, perm):
+        self.perm = perm
 
     def has_permission(self, request, view):
-        if request.user.is_active:
-            return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.user.is_active:
-            return True
-        return False
-
-
-
-
-##################Sales TL####################################################
-
-class IsSalesTL(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name="Sales TL"):
-            return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.user.groups.filter(name="Sales TL"):
-            return True
-        return False
-
-
-
-################################# Operation ##################################
-
-
-class IsOperationTl(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name="Operation Tl").exists():
-            return True
-        
-        return False
-    
-
-class IsOperationManager(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name="Operation Manager").exists():
-            return True
-        
-        return False
-    
-
-class IsOperationHod(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name="Operation Hod").exists():
-            return True
-        
-        return False
-            
-################################################ Finance ###################################
-class IsFinancesHod(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name="Finance Hod").exists():
-            return True
-        
-        return False
-    
-    
-    
+        if not request.user.is_authenticated:
+            return False
+        user_role = UserRole.objects.filter(user=request.user).first()
+        if not user_role:
+            return False
+        return request.user.is_superuser or user_role.permissions.filter(codename=self.perm).exists()

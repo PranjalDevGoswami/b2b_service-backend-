@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from api.account.permissions import IsActive
 from rest_framework.views import APIView
 from rest_framework import permissions, authentication
 from rest_framework.permissions import AllowAny,IsAuthenticated
@@ -11,7 +10,7 @@ from django.contrib.auth import logout
 from .serializers import *
 from rest_framework import status
 from rest_framework import generics
-from api.account.permissions import IsActive
+from api.account.permissions import IsSuperUser
 from django.contrib.auth import logout
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -29,23 +28,15 @@ from rest_framework.decorators import action
 
 User = get_user_model()
 
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+def custom_logout(request):
+    logout(request)
+    return redirect('/admin/login/')
+
 
 ###################### Custom Obtain Token #############################
-
-# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     def get_token(self, user):
-#         token = super().get_token(user)
-
-#         # Add custom claims
-#         token['user_id'] = base64.b64encode(force_bytes(str(user.id))).decode('utf-8')
-#         token['email'] = base64.b64encode(force_bytes(user.email)).decode('utf-8')
-#         try:
-#             profile_image_url = user.profile.profile_picture.url
-#         except Profile.DoesNotExist:
-#             profile_image_url = None
-#         token['profile_image'] = base64.b64encode(force_bytes(profile_image_url)).decode('utf-8')
-
-#         return token
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(self, user):

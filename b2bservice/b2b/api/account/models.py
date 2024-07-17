@@ -20,6 +20,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django_userforeignkey.models.fields import UserForeignKey
+from django.contrib.auth.models import Permission
 
 
 class Trackable(models.Model):
@@ -286,14 +287,14 @@ class UserModel(AbstractUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
-    class Meta:
-        default_permissions = ()
-        permissions = (
-            ('can_edit', 'Can Edit'),
-            ('can_view', 'Can View'),
-            ('can_create', 'Can Create'),
-            ('can_delete', 'Can Delete'),
-        )
+    # class Meta:
+    #     default_permissions = ()
+    #     permissions = (
+    #         ('can_edit', 'Can Edit'),
+    #         ('can_view', 'Can View'),
+    #         ('can_create', 'Can Create'),
+    #         ('can_delete', 'Can Delete'),
+    #     )
 
     @property
     def get_user_harkey(self, *args, **kwargs):
@@ -402,7 +403,22 @@ class UserRole(models.Model):
     user = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Industry")
+    permissions = models.ManyToManyField(Permission, blank=True)
 
 
     def __str__(self):
         return f"{self.user.username} - {self.role.name} - {self.user.industry.name}"
+    
+    
+    class Meta:
+        # Optionally define ordering or other Meta options
+        ordering = ['user__username']
+        
+        permissions = [
+            ("can_create", "Can Create"),
+            ("can_view", "Can View"),
+            ("can_edit", "Can Edit"),
+            ("can_delete", "Can Delete"),
+            ("can_approve", "Can Approve"),
+            ("can_reject", "Can reject"),
+        ]

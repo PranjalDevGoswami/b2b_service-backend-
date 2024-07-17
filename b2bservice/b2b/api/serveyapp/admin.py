@@ -9,26 +9,26 @@ class LanguageAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-@admin.register(Survey)
-class SurveyAdmin(admin.ModelAdmin):
-    list_display = ('question', 'points', 'created_by', 'industry', 'created_at')
-    search_fields = ('question',)
-    list_filter = ('created_at', 'industry')
-    raw_id_fields = ('created_by',)
+# @admin.register(Survey)
+# class SurveyAdmin(admin.ModelAdmin):
+#     list_display = ('question', 'points', 'created_by', 'industry', 'created_at')
+#     search_fields = ('question',)
+#     list_filter = ('created_at', 'industry')
+#     raw_id_fields = ('created_by',)
 
-@admin.register(servey_question_detail)
-class SurveyQuestionDetailAdmin(admin.ModelAdmin):
-    list_display = ('survey', 'title', 'company', 'language', 'start_date', 'end_date', 'is_active', 'created_at')
-    search_fields = ('title', 'descriptions')
-    list_filter = ('is_active', 'start_date', 'end_date')
-    raw_id_fields = ('survey', 'company', 'language')
+# @admin.register(servey_question_detail)
+# class SurveyQuestionDetailAdmin(admin.ModelAdmin):
+#     list_display = ('survey', 'title', 'company', 'language', 'start_date', 'end_date', 'is_active', 'created_at')
+#     search_fields = ('title', 'descriptions')
+#     list_filter = ('is_active', 'start_date', 'end_date')
+#     raw_id_fields = ('survey', 'company', 'language')
 
-@admin.register(SurveyAnswer)
-class SurveyAnswerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'survey', 'answer', 'is_public', 'created_at')
-    search_fields = ('answer',)
-    list_filter = ('created_at', 'is_public')
-    raw_id_fields = ('user', 'survey')
+# @admin.register(SurveyAnswer)
+# class SurveyAnswerAdmin(admin.ModelAdmin):
+#     list_display = ('user', 'survey', 'answer', 'is_public', 'created_at')
+#     search_fields = ('answer',)
+#     list_filter = ('created_at', 'is_public')
+#     raw_id_fields = ('user', 'survey')
 
 @admin.register(Interview)
 class InterviewAdmin(admin.ModelAdmin):
