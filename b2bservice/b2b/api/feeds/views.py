@@ -9,6 +9,8 @@ from .serializers import *
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 User = get_user_model()
 
 def fetch_feed(url, headers=None, limit=10):
@@ -78,25 +80,54 @@ class FeedList(generics.ListAPIView):
         
         return queryset
     
-    
-
 
 class TagListView(generics.ListAPIView):
     """
-    List tags based on the user's industry and category.
+    List tags based on the logged-in user's industry and associated categories.
+    Return category if available, otherwise return None for category.
+    Also return feeds related to each tag.
     """
     serializer_class = TagSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Assuming the user has an industry and category profile, you can filter based on that
-        user = self.request.user
-        industry_id = self.request.query_params.get('industry')
-        category_id = self.request.query_params.get('category')
-        
-        if industry_id and category_id:
-            return Tag.objects.filter(category__industry_id=industry_id, category_id=category_id)
-        return Tag.objects.none()
+        try:
+            user = self.request.user
+            
+            # Check if the user has an industry associated
+            if not user.industry:
+                raise NotFound(detail="Industry not found for the user.", code=status.HTTP_404_NOT_FOUND)
+            
+            industry_id = user.industry.id
+           
+            # Fetch categories linked to the industry
+            categories = Category.objects.filter(industry_id=industry_id).values_list('id', flat=True)
 
+            if not categories.exists():
+                raise NotFound(detail="No categories found for the user's industry.", code=status.HTTP_404_NOT_FOUND)
+
+            # Filter tags based on the fetched categories
+            queryset = Tag.objects.filter(category_id__in=categories)
+            
+            if not queryset.exists():
+                raise NotFound(detail="No tags found for the selected categories.", code=status.HTTP_404_NOT_FOUND)
+
+            return queryset
+        
+        except NotFound as e:
+            # If a specific NotFound exception is raised, re-raise it
+            raise e
+        
+        except Exception as e:
+            # For any other unforeseen exceptions, return a generic error response
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+            
+            
 class UserTagSelectionView(generics.CreateAPIView):
     """
     Allow users to select tags (like skills/interests).
