@@ -78,53 +78,57 @@ admin.site.register(Profile)
 admin.site.register(UserActiveDetail)
 
 
-# admin.site.register(Role)
-# admin.site.register(Department)
-# admin.site.register(UserRole)
 
 
 from django.contrib import admin
 from django.contrib.auth.models import Permission
 from .models import UserRole, UserModel, Role, Department
 
+
 class UserRoleAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'department')
-    list_filter = ('role', 'department')
-    search_fields = ('user__username', 'role__name', 'department__name')
-    filter_horizontal = ('permissions',)
+    list_display = ('user', 'role', 'department', 'designation')
+    list_filter = ('role', 'department', 'designation')
+    search_fields = ('user__username', 'role__name', 'department__name', 'designation__name')
+    
+    # Adding fields to manage permissions directly in the admin panel
+    filter_horizontal = ('permissions',)  # For ManyToManyField (permissions)
 
-    fieldsets = (
-        (None, {
-            'fields': ('user', 'role', 'department')
-        }),
-        ('Permissions', {
-            'fields': ('permissions',),
-        }),
-    )
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Customize the form to include only relevant permissions for the UserRole.
+        """
+        form = super().get_form(request, obj, **kwargs)
+        # You can filter the permissions here if needed
+        form.base_fields['permissions'].queryset = Permission.objects.all()
+        return form
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        # Add permissions to the user when UserRole is saved
-        user = obj.user
-        for perm in obj.permissions.all():
-            user.user_permissions.add(perm)
-        user.save()
+    def has_add_permission(self, request):
+        """
+        Control who can add a new UserRole from the admin panel.
+        """
+        return request.user.has_perm('your_app.can_create')
 
-    def delete_model(self, request, obj):
-        user = obj.user
-        # Remove permissions from the user when UserRole is deleted
-        for perm in obj.permissions.all():
-            user.user_permissions.remove(perm)
-        user.save()
-        super().delete_model(request, obj)
+    def has_change_permission(self, request, obj=None):
+        """
+        Control who can edit an existing UserRole from the admin panel.
+        """
+        return request.user.has_perm('your_app.can_edit')
 
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        # Ensure that we have the permissions available in the queryset
-        return queryset.prefetch_related('permissions')
+    def has_delete_permission(self, request, obj=None):
+        """
+        Control who can delete a UserRole from the admin panel.
+        """
+        return request.user.has_perm('your_app.can_delete')
+
+    def has_view_permission(self, request, obj=None):
+        """
+        Control who can view UserRole entries in the admin panel.
+        """
+        return request.user.has_perm('your_app.can_view')
 
 admin.site.register(UserRole, UserRoleAdmin)
 admin.site.register(Role)
 admin.site.register(Department)
+admin.site.register(Designation)
 admin.site.register(Permission)
 

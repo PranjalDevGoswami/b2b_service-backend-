@@ -5,7 +5,10 @@ import xml.etree.ElementTree as ET
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny,IsAuthenticated
-
+from .serializers import *
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import status
 User = get_user_model()
 
 def fetch_feed(url, headers=None, limit=10):
@@ -78,4 +81,34 @@ class FeedList(generics.ListAPIView):
     
 
 
-  
+class TagListView(generics.ListAPIView):
+    """
+    List tags based on the user's industry and category.
+    """
+    serializer_class = TagSerializer
+
+    def get_queryset(self):
+        # Assuming the user has an industry and category profile, you can filter based on that
+        user = self.request.user
+        industry_id = self.request.query_params.get('industry')
+        category_id = self.request.query_params.get('category')
+        
+        if industry_id and category_id:
+            return Tag.objects.filter(category__industry_id=industry_id, category_id=category_id)
+        return Tag.objects.none()
+
+class UserTagSelectionView(generics.CreateAPIView):
+    """
+    Allow users to select tags (like skills/interests).
+    """
+    serializer_class = UserTagSelectionSerializer
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        tag_ids = request.data.get('tag_ids', [])
+        
+        for tag_id in tag_ids:
+            tag = Tag.objects.get(id=tag_id)
+            UserTagSelection.objects.get_or_create(user=user, tag=tag)
+        
+        return Response({'message': 'Tags saved successfully'}, status=status.HTTP_201_CREATED)  

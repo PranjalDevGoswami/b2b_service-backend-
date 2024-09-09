@@ -145,10 +145,28 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'job', 'designation', 'countries', 'company', 
+            'job', 'countries', 'company', 
             'profile_picture'
         ]
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        # Replace job, countries, company with name or custom fields
+        representation['job'] = {
+            "id": instance.job.id,
+            "name": instance.job.title
+        }
+        representation['countries'] = {
+            "id": instance.countries.id,
+            "name": instance.countries.name
+        }
+        representation['company'] = {
+            "id": instance.company.id,
+            "name": instance.company.name
+        }
+
+        return representation
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
 
@@ -157,9 +175,29 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'email',
             'gender', 'date_of_birth', 'mobile', 'industry', 
-            'category', 'linked_profile', 'contact_person_name', 
-            'contact_person_number', 'profile'
+            'category', 'linked_profile', 'profile'
         ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Replace gender, industry, category with id and name
+        representation['gender'] = {
+            "id": instance.gender,
+            "name": instance.get_gender_display()  # get the display name of the choice
+        }
+        representation['industry'] = {
+            "id": instance.industry.id,
+            "name": instance.industry.name
+        }
+        representation['category'] = {
+            "id": instance.category.id,
+            "name": instance.category.name
+        }
+
+        return representation
+        
+        
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile')

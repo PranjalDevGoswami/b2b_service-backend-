@@ -7,6 +7,24 @@ from api.account.models import *
 User = get_user_model()
 
 
+
+
+
+class CreatePanel(models.Model):
+    users = models.ManyToManyField(UserRole, related_name='users')
+    name = models.CharField(max_length=250, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+    
+    
+    
+    
+    
+    
 class Language(models.Model):
     name = models.CharField(max_length=200)
     
@@ -26,19 +44,17 @@ class SurveyQuestion(models.Model):
     ]
 
     question = models.TextField()
-    question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default=TEXT)
-    options = models.JSONField(blank=True, null=True, help_text="JSON array of options for single or multi select questions")
+    description = models.TextField(blank=True, null=True)
     points = models.IntegerField(default=0)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_%(class)s', on_delete=models.CASCADE, blank=True, null=True)
-    industry = models.ForeignKey(Industry, on_delete=models.SET_NULL, blank=True, null=True)
+    duration = models.DurationField(blank=True, null=True)
     title = models.CharField(max_length=255, null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
-    language = models.ForeignKey(Language, on_delete=models.CASCADE, null=True, blank=True)
+    mode_of_payment = models.CharField(max_length=255, null=True, blank=True)
+    mode_of_interview= models.CharField(max_length=255, null=True, blank=True)
+    incentive = models.CharField(max_length=255, null=True, blank=True)
+    panels = models.ManyToManyField(CreatePanel, related_name='surveys')
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    time_zone = models.CharField(max_length=255, null=True, blank=True)
-    no_of_questions = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -126,3 +142,7 @@ class CommunityLike(models.Model):
 
     class Meta:
         unique_together = ('user', 'post')    
+        
+        
+
+        

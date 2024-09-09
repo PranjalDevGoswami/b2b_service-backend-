@@ -23,6 +23,8 @@ from django.utils.encoding import force_bytes
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 # Create your views here.
 
@@ -77,6 +79,7 @@ class B2bUserRegistration(generics.CreateAPIView):
 
 ################### B2B User Login API Views ############################
 class B2BUserLogin(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
 
@@ -117,7 +120,9 @@ class B2BUserLogin(APIView):
     
 
 ##################### Password Reset Request API Views ######################################
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+@method_decorator(csrf_exempt, name='dispatch')
 class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [permissions.AllowAny]
@@ -175,8 +180,10 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 
 ####################### Profile Update API VIEW ####################################
+from rest_framework_simplejwt.authentication import JWTAuthentication
 class UserProfileUpdateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
@@ -217,3 +224,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         else:
             return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
+

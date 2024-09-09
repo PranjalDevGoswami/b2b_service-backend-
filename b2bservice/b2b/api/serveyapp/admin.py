@@ -1,7 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-from django.contrib import admin
 from .models import *
 
 @admin.register(Language)
@@ -9,33 +6,44 @@ class LanguageAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-# @admin.register(Survey)
-# class SurveyAdmin(admin.ModelAdmin):
-#     list_display = ('question', 'points', 'created_by', 'industry', 'created_at')
-#     search_fields = ('question',)
-#     list_filter = ('created_at', 'industry')
-#     raw_id_fields = ('created_by',)
 
-# @admin.register(servey_question_detail)
-# class SurveyQuestionDetailAdmin(admin.ModelAdmin):
-#     list_display = ('survey', 'title', 'company', 'language', 'start_date', 'end_date', 'is_active', 'created_at')
-#     search_fields = ('title', 'descriptions')
-#     list_filter = ('is_active', 'start_date', 'end_date')
-#     raw_id_fields = ('survey', 'company', 'language')
-
-# @admin.register(SurveyAnswer)
-# class SurveyAnswerAdmin(admin.ModelAdmin):
-#     list_display = ('user', 'survey', 'answer', 'is_public', 'created_at')
-#     search_fields = ('answer',)
-#     list_filter = ('created_at', 'is_public')
-#     raw_id_fields = ('user', 'survey')
-
-@admin.register(Interview)
 class InterviewAdmin(admin.ModelAdmin):
     list_display = ('user', 'title', 'date', 'duration', 'completed', 'voucher')
-    search_fields = ('title',)
-    list_filter = ('date', 'completed')
-    raw_id_fields = ('user',)
+    search_fields = ('title', 'user__username')
+
+    def has_add_permission(self, request):
+        """
+        Allow the user 'ankit.sharma@novusinsights.com' to create new Interview instances.
+        """
+        if request.user.email == 'ankit.sharma@novusinsights.com':
+            return True
+        return super().has_add_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        Prevent the user 'ankit.sharma@novusinsights.com' from deleting any Interview instances.
+        """
+        if request.user.email == 'ankit.sharma@novusinsights.com':
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def has_change_permission(self, request, obj=None):
+        """
+        Optionally allow or disallow editing for 'ankit.sharma@novusinsights.com'.
+        """
+        if request.user.email == 'ankit.sharma@novusinsights.com':
+            return True  # Change this to False if you want to restrict editing as well
+        return super().has_change_permission(request, obj)
+
+    def has_view_permission(self, request, obj=None):
+        """
+        Ensure the user 'ankit.sharma@novusinsights.com' can view the Interview model.
+        """
+        if request.user.email == 'ankit.sharma@novusinsights.com':
+            return True
+        return super().has_view_permission(request, obj)
+
+admin.site.register(Interview, InterviewAdmin)
 
 @admin.register(MissedInterview)
 class MissedInterviewAdmin(admin.ModelAdmin):
@@ -86,3 +94,59 @@ class CommunityLikeAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
     raw_id_fields = ('user', 'post')
     unique_together = ('user', 'post')
+
+
+class CreatePanelAdmin(admin.ModelAdmin):
+    # Display these fields in the admin list view
+    list_display = ('name', 'display_users', 'created_at', 'updated_at', 'is_active')
+    
+    # Enable searching by 'name'
+    search_fields = ('name',)
+    
+    # Add filters for these fields
+    list_filter = ('is_active', 'created_at', 'updated_at')
+    
+    # Enable editing users directly in the admin
+    filter_horizontal = ('users',)
+
+    def display_users(self, obj):
+        # Join user names into a comma-separated string
+        return ", ".join([str(user) for user in obj.users.all()])
+    
+    # Optional: Give a more human-readable name for the custom column
+    display_users.short_description = 'Users'
+
+admin.site.register(CreatePanel, CreatePanelAdmin)
+
+admin.site.unregister(SurveyQuestion)
+class SurveyQuestionAdmin(admin.ModelAdmin):
+    # Fields to display in the list view
+    list_display = (
+        'question',
+        'points',
+        'duration',
+        'title',
+        'mode_of_payment',
+        'mode_of_interview',
+        'incentive',
+        'start_date',
+        'end_date',
+        'is_active',
+        'created_at',
+    )
+    # Fields to add search functionality
+    search_fields = ('question', 'title', 'mode_of_payment', 'mode_of_interview', 'incentive')
+    # Fields to filter by
+    list_filter = ('is_active', 'start_date', 'end_date')
+    # Fields to display in the detail view
+    readonly_fields = ('created_at',)
+    # Enable the selection of many-to-many fields
+    filter_horizontal = ('panels',)
+
+    def question_type(self, obj):
+        return dict(SurveyQuestion.QUESTION_TYPES).get(obj.question_type)
+
+# Register the model with the admin site
+admin.site.register(SurveyQuestion, SurveyQuestionAdmin)
+
+

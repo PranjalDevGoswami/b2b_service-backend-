@@ -333,7 +333,6 @@ class UserModel(AbstractUser, PermissionsMixin):
 class Profile(models.Model):
     user = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE, null=True, blank=True, related_name="user_job")
-    designation = models.CharField(max_length=30, blank=True)
     countries = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True, related_name="user_country")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, related_name="user_company")
     profile_picture = models.ImageField(
@@ -392,6 +391,12 @@ class Role(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Designation(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name    
 
 class Department(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -403,6 +408,7 @@ class UserRole(models.Model):
     user = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Industry")
+    designation = models.ForeignKey(Designation, on_delete=models.CASCADE, null=True, blank=True)
     permissions = models.ManyToManyField(Permission, blank=True)
 
 
