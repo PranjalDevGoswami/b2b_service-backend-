@@ -21,10 +21,7 @@ class CreatePanel(models.Model):
         return self.name
     
     
-    
-    
-    
-    
+  
 class Language(models.Model):
     name = models.CharField(max_length=200)
     
@@ -98,8 +95,8 @@ class Reward(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.points} points"
     
+   
     
-
 class Community(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()

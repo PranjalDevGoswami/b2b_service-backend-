@@ -42,7 +42,8 @@ class RewardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reward
         fields = ['id', 'user', 'points', 'description', 'created_at']
-
+        
+        
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community

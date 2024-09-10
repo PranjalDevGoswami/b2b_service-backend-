@@ -22,4 +22,5 @@ router.register(r'community-likes', CommunityLikeViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('interview-details/', InterviewDetailsAPIView.as_view(), name='interview-details'),
 ]
