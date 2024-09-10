@@ -85,50 +85,50 @@ from django.contrib.auth.models import Permission
 from .models import UserRole, UserModel, Role, Department
 
 
-class UserRoleAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'department', 'designation')
-    list_filter = ('role', 'department', 'designation')
-    search_fields = ('user__username', 'role__name', 'department__name', 'designation__name')
+# class UserRoleAdmin(admin.ModelAdmin):
+#     list_display = ('user', 'role', 'department', 'designation')
+#     list_filter = ('role', 'department', 'designation')
+#     search_fields = ('user__username', 'role__name', 'department__name', 'designation__name')
     
-    # Adding fields to manage permissions directly in the admin panel
-    filter_horizontal = ('permissions',)  # For ManyToManyField (permissions)
+#     # Adding fields to manage permissions directly in the admin panel
+#     filter_horizontal = ('permissions',)  # For ManyToManyField (permissions)
 
-    def get_form(self, request, obj=None, **kwargs):
-        """
-        Customize the form to include only relevant permissions for the UserRole.
-        """
-        form = super().get_form(request, obj, **kwargs)
-        # You can filter the permissions here if needed
-        form.base_fields['permissions'].queryset = Permission.objects.all()
-        return form
+#     def get_form(self, request, obj=None, **kwargs):
+#         """
+#         Customize the form to include only relevant permissions for the UserRole.
+#         """
+#         form = super().get_form(request, obj, **kwargs)
+#         # You can filter the permissions here if needed
+#         form.base_fields['permissions'].queryset = Permission.objects.all()
+#         return form
 
-    def has_add_permission(self, request):
-        """
-        Control who can add a new UserRole from the admin panel.
-        """
-        return request.user.has_perm('your_app.can_create')
+#     def has_add_permission(self, request):
+#         """
+#         Control who can add a new UserRole from the admin panel.
+#         """
+#         return request.user.has_perm('your_app.can_create')
 
-    def has_change_permission(self, request, obj=None):
-        """
-        Control who can edit an existing UserRole from the admin panel.
-        """
-        return request.user.has_perm('your_app.can_edit')
+#     def has_change_permission(self, request, obj=None):
+#         """
+#         Control who can edit an existing UserRole from the admin panel.
+#         """
+#         return request.user.has_perm('your_app.can_edit')
 
-    def has_delete_permission(self, request, obj=None):
-        """
-        Control who can delete a UserRole from the admin panel.
-        """
-        return request.user.has_perm('your_app.can_delete')
+#     def has_delete_permission(self, request, obj=None):
+#         """
+#         Control who can delete a UserRole from the admin panel.
+#         """
+#         return request.user.has_perm('your_app.can_delete')
 
-    def has_view_permission(self, request, obj=None):
-        """
-        Control who can view UserRole entries in the admin panel.
-        """
-        return request.user.has_perm('your_app.can_view')
+#     def has_view_permission(self, request, obj=None):
+#         """
+#         Control who can view UserRole entries in the admin panel.
+#         """
+#         return request.user.has_perm('your_app.can_view')
 
-admin.site.register(UserRole, UserRoleAdmin)
-admin.site.register(Role)
-admin.site.register(Department)
-admin.site.register(Designation)
-admin.site.register(Permission)
+# admin.site.register(UserRole, UserRoleAdmin)
+# admin.site.register(Role)
+# admin.site.register(Department)
+# admin.site.register(Designation)
+# admin.site.register(Permission)
 

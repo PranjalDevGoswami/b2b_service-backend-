@@ -385,12 +385,6 @@ class UserActiveDetail(models.Model):
         return self.user.username
     
 
-
-class Role(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
     
 class Designation(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -403,13 +397,29 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class Permission(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class Role(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    permissions = models.ManyToManyField(Permission, blank=True)
+
+    def __str__(self):
+        return self.name
+    
 
 class UserRole(models.Model):
     user = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Industry")
+    industry = models.ForeignKey(Industry, on_delete=models.CASCADE, null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True)
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE, null=True, blank=True)
-    permissions = models.ManyToManyField(Permission, blank=True)
 
 
     def __str__(self):
@@ -419,12 +429,11 @@ class UserRole(models.Model):
     class Meta:
         # Optionally define ordering or other Meta options
         ordering = ['user__username']
-        
-        permissions = [
-            ("can_create", "Can Create"),
-            ("can_view", "Can View"),
-            ("can_edit", "Can Edit"),
-            ("can_delete", "Can Delete"),
-            ("can_approve", "Can Approve"),
-            ("can_reject", "Can reject"),
-        ]
+
+
+class UserPermission(models.Model):
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.permission.name}"
