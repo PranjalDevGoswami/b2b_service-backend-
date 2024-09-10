@@ -17,68 +17,6 @@ FEEDS = {
     
 }
 
-# def fetch_feeds():
-#     feeds = []
-#     for source, url in FEEDS.items():
-#         feed = feedparser.parse(url)
-#         for entry in feed.entries:
-#             link = entry.get('link', None)
-#             if link:
-#                 published = datetime(*entry.published_parsed[:6])
-#                 feed_entry, created = FeedEntry.objects.get_or_create(
-#                     source=source,
-#                     link=link,
-#                     defaults={
-#                         'title': entry.title,
-#                         'summary': entry.summary,
-#                         'published': published
-#                     }
-#                 )
-#                 if created:
-#                     # Assuming tags are available in some form in the entry
-#                     tags_data = entry.get('tags', [])
-#                     tags = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
-#                     feed_entry.tags.add(*tags)
-#                     feed_entry.save()
-#                     feeds.append(feed_entry)
-#             else:
-#                 logger.warning(f"Entry missing 'link' attribute in feed '{source}': {entry}")
-#     return feeds
-
-# def fetch_feeds():
-#     feeds = []
-#     for source, url in FEEDS.items():
-#         feed = feedparser.parse(url)
-#         for entry in feed.entries:
-#             link = entry.get('link', None)
-#             image_link = None
-#             # Try to extract image link from media content or enclosure
-#             if 'media_content' in entry:
-#                 image_link = entry.media_content[0]['url']  # Common in many feeds
-#             elif 'enclosure' in entry:
-#                 image_link = entry.enclosure.get('url')
-            
-#             if link:
-#                 published = datetime(*entry.published_parsed[:6])
-#                 feed_entry, created = FeedEntry.objects.get_or_create(
-#                     source=source,
-#                     link=link,
-#                     defaults={
-#                         'title': entry.title,
-#                         'summary': entry.summary,
-#                         'published': published,
-#                         'image_link': image_link  # Save the image link
-#                     }
-#                 )
-#                 if created:
-#                     tags_data = entry.get('tags', [])
-#                     tags = [Tag.objects.get_or_create(name=tag)[0] for tag in tags_data]
-#                     feed_entry.tags.add(*tags)
-#                     feed_entry.save()
-#                     feeds.append(feed_entry)
-#             else:
-#                 logger.warning(f"Entry missing 'link' attribute in feed '{source}': {entry}")
-#     return feeds
 
 import feedparser
 from datetime import datetime
@@ -133,3 +71,27 @@ def fetch_feeds():
             else:
                 logger.warning(f"Entry missing 'link' attribute in feed '{source}': {entry}")
     return feeds
+
+from django.shortcuts import render
+# Add this function to extract unique tags from feed entries
+def extract_unique_tags():
+    unique_tags = set()  # Use a set to ensure uniqueness
+    for source, url in FEEDS.items():
+        feed = feedparser.parse(url)
+        for entry in feed.entries:
+            # Extract tags if available
+            tags_data = entry.get('tags', [])
+            for tag in tags_data:
+                unique_tags.add(tag)
+    return list(unique_tags)  # Convert back to a list for easier processing
+
+# # Fetch feeds and get unique tags
+# def fetch_and_display_feeds():
+#     unique_tags = extract_unique_tags()
+    
+#     # Pass unique tags to the template for user selection
+#     context = {
+#         'tags': unique_tags,  # These tags will be rendered in the front-end
+#     }
+#     return render(request, 'feed_display.html', context)
+

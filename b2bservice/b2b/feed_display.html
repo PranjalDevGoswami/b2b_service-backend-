@@ -1,0 +1,37 @@
+<div class="skills-section">
+    <h2>Select at least 5 skills/interests</h2>
+    <div id="tag-selection">
+      {% for tag in tags %}
+        <button class="tag-btn" data-tag="{{ tag }}">{{ tag }}</button>
+      {% endfor %}
+    </div>
+    <button id="continue-btn" disabled>Continue</button>
+  </div>
+  
+  <script>
+    let selectedTags = [];
+    const continueBtn = document.getElementById('continue-btn');
+    const tagButtons = document.querySelectorAll('.tag-btn');
+  
+    tagButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const tag = this.getAttribute('data-tag');
+        
+        if (selectedTags.includes(tag)) {
+          selectedTags = selectedTags.filter(t => t !== tag);
+          this.classList.remove('selected');
+        } else if (selectedTags.length < 5) {
+          selectedTags.push(tag);
+          this.classList.add('selected');
+        }
+  
+        // Enable/disable the continue button based on the number of selected tags
+        if (selectedTags.length >= 5) {
+          continueBtn.disabled = false;
+        } else {
+          continueBtn.disabled = true;
+        }
+      });
+    });
+  </script>
+  
